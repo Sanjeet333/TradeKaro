@@ -1,0 +1,206 @@
+# TradeKaro
+
+A full-stack MERN trading platform simulator — built end-to-end to understand how modern discount brokerages actually work under the hood: order flow, live market data, portfolio tracking, authentication, and support systems.
+
+**Live demo:** _[add your deployed link here after Part 2]_
+**Video walkthrough:** _[optional — add a Loom/YouTube link if you record one]_
+
+---
+
+## Why this project
+
+Most trading platform tutorials stop at a static UI. TradeKaro is a **working system** — every screen, from signup to order placement, is backed by a real REST API and a real database. There's no mock data and no shortcuts. The goal wasn't to copy an existing product but to understand how modern discount brokerages work: figuring out the small UX and architecture decisions that make a trading interface feel trustworthy, and implementing them from scratch.
+
+---
+
+## Features
+
+### Authentication
+
+- JWT-based signup/login with bcrypt password hashing
+- Cross-app token handoff (separate landing/marketing app and dashboard app, connected via a shared auth flow)
+- Session verification on load (`/verify`) with automatic logout on expired/invalid tokens
+- Protected routes on both frontend and backend
+
+### Live Market Data
+
+- Real NSE-listed stock data (500+ symbols) sourced from Yahoo Finance
+- In-memory caching layer to minimize external API calls and avoid unnecessary load, keyed per symbol with a short TTL
+- **WebSocket-based real-time price streaming** (Socket.io) — prices push to connected clients instead of polling, with an immediate one-time quote sent on subscribe so the UI doesn't wait for the next broadcast tick
+- Searchable stock discovery — add any of the 500+ tracked symbols to a personal watchlist
+
+### Trading
+
+- Buy/Sell order placement with **CNC (delivery)** and **MIS (intraday)** product types
+- Server-side validation before any state mutation (insufficient funds, invalid sell quantity, no holding/position to sell) — validate-first, mutate-later pattern to avoid partial/inconsistent writes
+- Weighted-average cost calculation on repeated buys
+- Virtual wallet (Funds) — balance deducted on buy, credited on sell, with an order-level insufficient-funds check
+
+### Portfolio Tracking
+
+- **Holdings** (CNC positions) with live P&L, day change %, and a portfolio-allocation donut chart
+- **Positions** (MIS/intraday) with live P&L, separate from delivery holdings
+- **Orders** — full order history log, sorted latest-first, per user
+- **Dashboard** — consolidated view of equity, holdings P&L, and open intraday positions
+
+### Analytics
+
+- MongoDB aggregation pipelines for trading insights: total trades, most-traded stock, buy/sell breakdown
+- Monthly trade volume trend, visualized as a line chart
+
+### Support
+
+- Built-in ticketing-style support center on the marketing site
+- Functional contact form — messages delivered via a real SMTP email pipeline (Nodemailer + Gmail App Password), with `replyTo` wired to the sender so replies go straight back to them
+
+### UI/UX Design System
+
+- **Custom design tokens**: a 4-color brand palette (`brand-dark`, `brand-mid`, `brand-light`, `brand-pale`) defined via Tailwind v4's `@theme`, applied consistently across the landing pages and the trading dashboard — including buy/sell semantic colors, live-data pulse indicators, and chart theming
+- **Typography system**: Space Grotesk for headings, Inter for body text, applied uniformly through custom `font-heading` / `font-body` utility classes
+- **Live-data visual language**: reusable "live" motifs (pulsing status dots, animated SVG price charts, real-time WebSocket-driven watchlist) used across the marketing site and dashboard to visually reinforce the platform's real-time nature
+- **Responsive, mobile-first layouts**: every page — including the trading dashboard, modals, and navigation — is built with distinct mobile / tablet / desktop breakpoints, using stacked card views on mobile and full data tables on larger screens
+- **Accessible interaction patterns**: modals use React portals to escape parent stacking contexts, include body-scroll locking while open, and support click-outside-to-close; navigation menus support keyboard focus states and screen-reader labels
+- **Consistent component library**: shared UI primitives (buttons, cards, badges, form inputs) follow a single visual language (rounded-2xl cards, branded shadows, ring-based focus states) across both the public site and the authenticated dashboard
+
+---
+
+## Tech Stack
+
+**Frontend**
+
+- React + Vite
+- Tailwind CSS v4 (custom design tokens via `@theme`)
+- Chart.js (portfolio allocation, watchlist trend, analytics)
+- Socket.io-client (real-time price streaming)
+- React Router
+
+**Backend**
+
+- Node.js + Express (MVC-style structure — routes → controllers → services)
+- MongoDB + Mongoose
+- Socket.io (WebSocket server)
+- JWT + bcryptjs (auth)
+- Nodemailer (contact form email delivery)
+- Yahoo Finance API (via `yahoo-finance2`) — live market data source
+
+---
+
+## Architecture Notes
+
+- **Two frontend apps**: a public marketing/landing site and an authenticated trading dashboard, connected by a JWT handoff over a redirect URL — mirroring how real brokerages separate their marketing site from their trading platform
+- **Live data, not stored data**: prices are never persisted to the database — only a 15-second in-memory cache. Only user actions (orders, holdings, positions, funds) are stored
+- **WebSocket subscription model**: clients emit `subscribe` with their watchlist symbols; the server tracks a global `Set` of subscribed symbols (deduplicated across users) and broadcasts on a fixed interval, plus an immediate quote on first subscribe for fast initial load
+- **MVC separation** for newer features (contact form, notifications) — routes handle only path→controller mapping, controllers handle request validation and response shaping, services hold the actual business logic (e.g., email sending, price broadcasting) independent of Express's `req`/`res`
+
+---
+
+## Project Structure
+
+```
+TRADEKARO/
+├── backend/
+│   ├── controllers/       # Request handling logic
+│   ├── middleware/         # JWT verification
+│   ├── model/               # Mongoose schemas
+│   ├── routes/               # Express route definitions
+│   ├── services/             # Business logic (email, stock data, price broadcasting)
+│   ├── sockets/               # Socket.io connection handlers
+│   ├── data/                   # Static Nifty 500 symbol list
+│   └── index.js
+├── dashboard/                   # Trading dashboard (authenticated app)
+│   └── src/
+│       ├── components/
+│       ├── context/               # AuthContext
+│       └── utils/                  # axios instance, socket client
+└── frontend/                       # Public marketing/landing site
+    └── src/
+        └── landing_page/
+```
+
+---
+
+## Running Locally
+
+### Prerequisites
+
+- Node.js (v18+)
+- MongoDB Atlas account (or local MongoDB)
+- Gmail account with an App Password (for the contact form)
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/<your-username>/tradekaro.git
+cd tradekaro
+```
+
+### 2. Backend setup
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file:
+
+```
+MONGO_URL=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+PORT=3002
+EMAIL_USER=your_gmail_address
+EMAIL_APP_PASSWORD=your_16_char_app_password
+FRONTEND_URL_DASHBOARD=http://localhost:5173
+FRONTEND_URL_LANDING=http://localhost:5174
+```
+
+```bash
+npm run dev
+```
+
+### 3. Dashboard frontend setup
+
+```bash
+cd dashboard
+npm install
+```
+
+Create a `.env` file:
+
+```
+VITE_API_URL=http://localhost:3002
+```
+
+```bash
+npm run dev
+```
+
+### 4. Landing/marketing frontend setup
+
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env` file:
+
+```
+VITE_API_URL=http://localhost:3002
+VITE_DASHBOARD_URL=http://localhost:5173
+```
+
+```bash
+npm run dev
+```
+
+---
+
+## Author
+
+**Sanjeet Singh** — Full-Stack Developer
+Built with the MERN stack, Tailwind CSS, and a focus on writing clean, maintainable code that solves real UX problems — not just styling screens.
+
+[GitHub](#) · [LinkedIn](#) · [LeetCode](#)
+
+---
+
+_TradeKaro is a personal/learning project. Trades are processed within the app's own system and are not routed to a live exchange._
