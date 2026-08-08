@@ -16,7 +16,10 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:3002/login', formData);
+      const res = await axios.post(
+        'https://tradekaro-backend.onrender.com/login',
+        formData
+      );
       window.location.href = `http://localhost:5173?token=${res.data.token}`;
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Try again.');

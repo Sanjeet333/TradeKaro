@@ -13,11 +13,14 @@ const ContactForm = () => {
     e.preventDefault();
     setStatus('loading');
     try {
-      const res = await fetch('http://localhost:3002/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+      const res = await fetch(
+        'https://tradekaro-backend.onrender.com/api/contact',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        }
+      );
       if (!res.ok) throw new Error('Request failed');
       setStatus('success');
       setForm({ name: '', email: '', message: '' });
