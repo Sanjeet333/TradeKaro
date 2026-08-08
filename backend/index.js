@@ -17,20 +17,20 @@ import watchlistRoutes from './routes/watchlistRoutes.js';
 import stocksRoutes from './routes/stocksRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import notificationsRoutes from './routes/notificationsRoutes.js';
-import contactRoutes from './routes/contactRoutes.js'
+import contactRoutes from './routes/contactRoutes.js';
 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 8080;
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(cors());
 app.use(express.json());
 
 connectDB(process.env.MONGO_URL);
 
-// Route mounting — har group apne prefix ke saath
+// Route mounting
 app.use(authRoutes);
 app.use(holdingsRoutes);
 app.use(positionsRoutes);
@@ -40,11 +40,11 @@ app.use(watchlistRoutes);
 app.use(stocksRoutes);
 app.use(analyticsRoutes);
 app.use(notificationsRoutes);
-app.use('/api', contactRoutes)
+app.use('/api', contactRoutes);
 
 initSocketHandlers(io);
 startPriceBroadcasting(io);
 
 server.listen(PORT, () => {
-  console.log("App is listening");
+  console.log('App is listening');
 });

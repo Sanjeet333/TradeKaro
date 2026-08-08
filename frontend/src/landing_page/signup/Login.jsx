@@ -20,7 +20,7 @@ const Login = () => {
         'https://tradekaro-backend.onrender.com/login',
         formData
       );
-      window.location.href = `http://localhost:5173?token=${res.data.token}`;
+      window.location.href = `https://trade-karo-nine.vercel.app?token=${res.data.token}`;
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Try again.');
     } finally {
