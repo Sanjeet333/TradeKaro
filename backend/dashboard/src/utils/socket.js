@@ -1,7 +1,7 @@
-import {io} from "socket.io-client";
+import { io } from 'socket.io-client';
 
-const socket = io("http://localhost:3002", {
-    autoConnect: false,
+const socket = io('https://tradekaro-backend.onrender.com', {
+  autoConnect: false,
 });
 
 export default socket;

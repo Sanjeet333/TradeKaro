@@ -5,7 +5,7 @@ const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
 
   if (!token) {
-    window.location.href = 'http://localhost:5174/login';
+    window.location.href = 'https://trade-karo-nine.vercel.app/login';
     return null;
   }
 

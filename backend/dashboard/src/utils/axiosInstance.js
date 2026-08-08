@@ -1,11 +1,11 @@
-import axios from "axios";
+import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:3002",
+  baseURL: 'https://tradekaro-backend.onrender.com',
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -16,9 +16,9 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 || error.response?.status === 403) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "http://localhost:5174/login";
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'https://trade-karo-nine.vercel.app/login';
     }
     return Promise.reject(error);
   }
