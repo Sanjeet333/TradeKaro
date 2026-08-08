@@ -83,6 +83,14 @@ initSocketHandlers(io);
 // ========== Price Broadcasting ==========
 startPriceBroadcasting(io);
 
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+
 // ========== Server Startup ==========
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

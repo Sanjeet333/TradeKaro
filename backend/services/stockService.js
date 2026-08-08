@@ -1,4 +1,4 @@
-import Finnhub from 'finnhub';
+import axios from 'axios';
 import NodeCache from 'node-cache';
 import fs from 'fs';
 import path from 'path';
@@ -6,14 +6,22 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const finnhub = new Finnhub.DefaultApi();
-finnhub.apiKey = process.env.FINNHUB_API_KEY;
+const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
+const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 
 const cache = new NodeCache({ stdTTL: 10 });
 
-const stockList = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '..', 'data', 'nifty500.json'), 'utf-8')
-);
+let stockList = [];
+try {
+  stockList = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, '..', 'data', 'nifty500.json'),
+      'utf-8'
+    )
+  );
+} catch (err) {
+  console.error('Failed to load nifty500.json:', err.message);
+}
 
 export const getAllSymbols = () => stockList;
 
@@ -21,7 +29,18 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const fetchSingleQuote = async (symbol) => {
   try {
-    const quote = await finnhub.quote(symbol);
+    const response = await axios.get(`${FINNHUB_BASE_URL}/quote`, {
+      params: { symbol, token: FINNHUB_API_KEY },
+      timeout: 5000,
+    });
+
+    const quote = response.data;
+
+    // Finnhub returns all zeros for invalid/unsupported symbols
+    if (!quote || (quote.c === 0 && quote.pc === 0)) {
+      throw new Error('Invalid or empty quote data');
+    }
+
     const data = {
       symbol,
       name: symbol,
