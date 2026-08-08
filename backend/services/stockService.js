@@ -17,6 +17,8 @@ const stockList = JSON.parse(
 
 export const getAllSymbols = () => stockList;
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const fetchSingleQuote = async (symbol) => {
   try {
     const quote = await finnhub.quote(symbol);
@@ -47,7 +49,6 @@ export const getBatchQuotes = async (symbols) => {
   for (let i = 0; i < symbols.length; i += batchSize) {
     const batch = symbols.slice(i, i + batchSize);
 
-    // Check cache first
     const cachedResults = batch
       .map((symbol) => cache.get(symbol))
       .filter(Boolean);
@@ -56,14 +57,12 @@ export const getBatchQuotes = async (symbols) => {
 
     results.push(...cachedResults);
 
-    // Fetch uncached
     if (uncachedSymbols.length > 0) {
       const batchResults = await Promise.all(
         uncachedSymbols.map((symbol) => fetchSingleQuote(symbol))
       );
       results.push(...batchResults.filter(Boolean));
 
-      // 100ms delay between batches
       if (i + batchSize < symbols.length) {
         await delay(100);
       }
