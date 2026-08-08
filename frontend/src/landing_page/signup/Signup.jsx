@@ -24,7 +24,7 @@ const Signup = () => {
         'https://tradekaro-backend.onrender.com/signup',
         formData
       );
-      window.location.href = `https://trade-karo-nine.vercel.app?token=${res.data.token}`;
+      window.location.href = `https://trade-karo-dashboard.vercel.app?token=${res.data.token}`;
     } catch (err) {
       setError(err.response?.data?.error || 'Signup failed. Try again.');
     } finally {
