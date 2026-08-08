@@ -23,13 +23,13 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "finnhub": "^2.0.15",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.7.3",
     "node-cache": "^5.1.2",
     "nodemailer": "^9.0.4",
     "passport": "^0.7.0",
-    "socket.io": "^4.8.3",
-    "yahoo-finance2": "^4.0.0"
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "prettier": "^3.9.6"
