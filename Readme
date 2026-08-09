@@ -2,8 +2,7 @@
 
 A full-stack MERN trading platform simulator — built end-to-end to understand how modern discount brokerages actually work under the hood: order flow, live market data, portfolio tracking, authentication, and support systems.
 
-**Live demo:** _[add your deployed link here after Part 2]_
-**Video walkthrough:** _[optional — add a Loom/YouTube link if you record one]_
+**Live demo:** [https://trade-karo-nine.vercel.app](https://trade-karo-nine.vercel.app/)
 
 ---
 
@@ -24,10 +23,10 @@ Most trading platform tutorials stop at a static UI. TradeKaro is a **working sy
 
 ### Live Market Data
 
-- Real NSE-listed stock data (500+ symbols) sourced from Yahoo Finance
+- Real stock data (S&P 500 symbols) sourced from Finnhub
 - In-memory caching layer to minimize external API calls and avoid unnecessary load, keyed per symbol with a short TTL
 - **WebSocket-based real-time price streaming** (Socket.io) — prices push to connected clients instead of polling, with an immediate one-time quote sent on subscribe so the UI doesn't wait for the next broadcast tick
-- Searchable stock discovery — add any of the 500+ tracked symbols to a personal watchlist
+- Searchable stock discovery — add any of the tracked symbols to a personal watchlist
 
 ### Trading
 
@@ -81,14 +80,14 @@ Most trading platform tutorials stop at a static UI. TradeKaro is a **working sy
 - Socket.io (WebSocket server)
 - JWT + bcryptjs (auth)
 - Nodemailer (contact form email delivery)
-- Yahoo Finance API (via `yahoo-finance2`) — live market data source
+- Finnhub API — live market data source
 
 ---
 
 ## Architecture Notes
 
 - **Two frontend apps**: a public marketing/landing site and an authenticated trading dashboard, connected by a JWT handoff over a redirect URL — mirroring how real brokerages separate their marketing site from their trading platform
-- **Live data, not stored data**: prices are never persisted to the database — only a 15-second in-memory cache. Only user actions (orders, holdings, positions, funds) are stored
+- **Live data, not stored data**: prices are never persisted to the database — only a short-lived in-memory cache. Only user actions (orders, holdings, positions, funds) are stored
 - **WebSocket subscription model**: clients emit `subscribe` with their watchlist symbols; the server tracks a global `Set` of subscribed symbols (deduplicated across users) and broadcasts on a fixed interval, plus an immediate quote on first subscribe for fast initial load
 - **MVC separation** for newer features (contact form, notifications) — routes handle only path→controller mapping, controllers handle request validation and response shaping, services hold the actual business logic (e.g., email sending, price broadcasting) independent of Express's `req`/`res`
 
@@ -105,7 +104,7 @@ TRADEKARO/
 │   ├── routes/               # Express route definitions
 │   ├── services/             # Business logic (email, stock data, price broadcasting)
 │   ├── sockets/               # Socket.io connection handlers
-│   ├── data/                   # Static Nifty 500 symbol list
+│   ├── data/                   # Static stock symbol list
 │   └── index.js
 ├── dashboard/                   # Trading dashboard (authenticated app)
 │   └── src/
@@ -115,81 +114,6 @@ TRADEKARO/
 └── frontend/                       # Public marketing/landing site
     └── src/
         └── landing_page/
-```
-
----
-
-## Running Locally
-
-### Prerequisites
-
-- Node.js (v18+)
-- MongoDB Atlas account (or local MongoDB)
-- Gmail account with an App Password (for the contact form)
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/<your-username>/tradekaro.git
-cd tradekaro
-```
-
-### 2. Backend setup
-
-```bash
-cd backend
-npm install
-```
-
-Create a `.env` file:
-
-```
-MONGO_URL=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-PORT=3002
-EMAIL_USER=your_gmail_address
-EMAIL_APP_PASSWORD=your_16_char_app_password
-FRONTEND_URL_DASHBOARD=http://localhost:5173
-FRONTEND_URL_LANDING=http://localhost:5174
-```
-
-```bash
-npm run dev
-```
-
-### 3. Dashboard frontend setup
-
-```bash
-cd dashboard
-npm install
-```
-
-Create a `.env` file:
-
-```
-VITE_API_URL=http://localhost:3002
-```
-
-```bash
-npm run dev
-```
-
-### 4. Landing/marketing frontend setup
-
-```bash
-cd frontend
-npm install
-```
-
-Create a `.env` file:
-
-```
-VITE_API_URL=http://localhost:3002
-VITE_DASHBOARD_URL=http://localhost:5173
-```
-
-```bash
-npm run dev
 ```
 
 ---
