@@ -14,14 +14,16 @@ const cache = new NodeCache({ stdTTL: 10 });
 let stockList = [];
 try {
   stockList = JSON.parse(
-    fs.readFileSync(
-      path.join(__dirname, '..', 'data', 'nifty500.json'),
-      'utf-8'
-    )
+    fs.readFileSync(path.join(__dirname, '..', 'data', 'Sp500.json'), 'utf-8')
   );
 } catch (err) {
-  console.error('Failed to load nifty500.json:', err.message);
+  console.error('Failed to load Sp500.json:', err.message);
 }
+
+// Quick lookup for company name by symbol
+const nameBySymbol = Object.fromEntries(
+  stockList.map((s) => [s.symbol, s.name])
+);
 
 export const getAllSymbols = () => stockList;
 
@@ -43,7 +45,7 @@ const fetchSingleQuote = async (symbol) => {
 
     const data = {
       symbol,
-      name: symbol,
+      name: nameBySymbol[symbol] || symbol,
       price: quote.c ?? 0,
       change: quote.d ?? 0,
       changePercent: quote.dp ?? 0,

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import axiosInstance from '../utils/axiosInstance';
 
-// Notification Dropdown Component - with portal for mobile view
+// Notification Dropdown Component - same style on mobile and desktop
 const NotificationDropdown = ({
   notifications,
   unreadCount,
@@ -33,26 +33,26 @@ const NotificationDropdown = ({
   return (
     <div
       ref={dropdownRef}
+      // Same anchored-dropdown style for both mobile and desktop:
+      // - positioned absolute, right-aligned to the bell button
+      // - width capped to viewport width so it never overflows off-screen
       className="
-        fixed md:absolute md:right-0 
-        md:mt-2 
-        w-full md:w-72
-        md:max-h-80
-        max-h-[70vh]
-        bg-white 
-        border border-brand-light/70 
-        rounded-t-2xl md:rounded-2xl
+        absolute right-0 mt-2
+        w-72 max-w-[calc(100vw-2rem)]
+        max-h-80
+        bg-white
+        border border-brand-light/70
+        rounded-2xl
         shadow-[0_10px_30px_-10px_rgba(68,101,146,0.25)]
         z-50
         overflow-y-auto
+        overflow-x-hidden
+        custom-scrollbar
         animate-fade-up
-        md:left-auto
-        bottom-0
-        md:bottom-auto
       "
     >
       {/* Header - with title and mark all read button */}
-      <div className="sticky top-0 bg-white flex justify-between items-center px-3.5 py-2.5 border-b border-brand-light/50 rounded-t-2xl md:rounded-t-2xl">
+      <div className="sticky top-0 bg-white flex justify-between items-center px-3.5 py-2.5 border-b border-brand-light/50 rounded-t-2xl">
         <span className="text-xs font-heading font-semibold text-brand-dark">
           Notifications
         </span>
@@ -68,7 +68,7 @@ const NotificationDropdown = ({
       </div>
 
       {/* Notification List or Empty State */}
-      <div className="custom-scrollbar">
+      <div>
         {notifications.length === 0 ? (
           // Empty state - shows when no notifications exist
           <p className="text-xs text-ink/40 text-center py-5 font-medium">
@@ -80,8 +80,8 @@ const NotificationDropdown = ({
             <div
               key={n._id}
               className={`
-                px-3.5 py-2.5 
-                text-xs 
+                px-3.5 py-2.5
+                text-xs
                 border-b border-brand-light/40
                 transition-colors duration-200
                 ${
@@ -145,19 +145,6 @@ const NotificationBell = ({ refreshTrigger }) => {
     }
   };
 
-  // Prevent body scroll when dropdown is open on mobile
-  useEffect(() => {
-    if (showDropdown) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showDropdown]);
-
   return (
     <div className="relative font-body">
       {/* Bell Button - with badge for unread count */}
@@ -176,21 +163,13 @@ const NotificationBell = ({ refreshTrigger }) => {
         )}
       </button>
 
-      {/* Notification Dropdown - renders when showDropdown is true */}
+      {/* Notification Dropdown - renders when showDropdown is true, same style all screen sizes */}
       {showDropdown && (
         <NotificationDropdown
           notifications={notifications}
           unreadCount={unreadCount}
           onMarkAllRead={handleMarkAllRead}
           onClose={() => setShowDropdown(false)}
-        />
-      )}
-
-      {/* Mobile Backdrop - dims screen when dropdown is open (mobile only) */}
-      {showDropdown && (
-        <div
-          className="fixed inset-0 bg-black/20 z-40 md:hidden"
-          onClick={() => setShowDropdown(false)}
         />
       )}
     </div>
