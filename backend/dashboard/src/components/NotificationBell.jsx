@@ -2,12 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import axiosInstance from '../utils/axiosInstance';
 
+// Notification Dropdown - purely CSS-positioned (no JS viewport math).
+// TopBar height is a fixed h-16 (4rem), so we anchor the dropdown just
+// below it with a fixed right margin. This avoids relying on
+// window.innerWidth / getBoundingClientRect, which can be unreliable
+// on real mobile browsers due to the dynamic address bar changing the
+// layout viewport vs visual viewport - a quirk that doesn't show up in
+// desktop DevTools device emulation, only on real devices.
 const NotificationDropdown = ({
   notifications,
   unreadCount,
   onMarkAllRead,
   onClose,
-  anchorStyle,
 }) => {
   const dropdownRef = useRef(null);
 
@@ -29,10 +35,9 @@ const NotificationDropdown = ({
   return (
     <div
       ref={dropdownRef}
-      style={anchorStyle}
       className="
-        fixed
-        w-72
+        fixed top-20 right-4
+        w-72 max-w-[calc(100vw-2rem)]
         max-h-80
         bg-white
         border border-brand-light/70
@@ -96,8 +101,6 @@ const NotificationBell = ({ refreshTrigger }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [anchorStyle, setAnchorStyle] = useState(null);
-  const bellButtonRef = useRef(null);
 
   const loadNotifications = async () => {
     try {
@@ -125,23 +128,10 @@ const NotificationBell = ({ refreshTrigger }) => {
     }
   };
 
-  const toggleDropdown = () => {
-    if (!showDropdown && bellButtonRef.current) {
-      const rect = bellButtonRef.current.getBoundingClientRect();
-      const rightOffset = window.innerWidth - rect.right;
-      setAnchorStyle({
-        top: rect.bottom + 8,
-        right: Math.max(rightOffset, 8),
-      });
-    }
-    setShowDropdown((prev) => !prev);
-  };
-
   return (
     <div className="relative font-body">
       <button
-        ref={bellButtonRef}
-        onClick={toggleDropdown}
+        onClick={() => setShowDropdown((prev) => !prev)}
         className="relative cursor-pointer text-ink/40 hover:text-brand-dark p-1.5 rounded-full hover:bg-brand-pale/60 transition-colors duration-200 active:scale-95"
       >
         <Bell className="w-4 h-4" />
@@ -152,13 +142,12 @@ const NotificationBell = ({ refreshTrigger }) => {
         )}
       </button>
 
-      {showDropdown && anchorStyle && (
+      {showDropdown && (
         <NotificationDropdown
           notifications={notifications}
           unreadCount={unreadCount}
           onMarkAllRead={handleMarkAllRead}
           onClose={() => setShowDropdown(false)}
-          anchorStyle={anchorStyle}
         />
       )}
     </div>
