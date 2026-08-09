@@ -94,6 +94,15 @@ const Menu = ({ refreshTrigger, username }) => {
             >
               Funds
             </NavLink>
+            <NavLink
+              to="/analytics"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `px-4 py-2.5 hover:bg-brand-pale/50 transition-colors duration-200 ${isActive ? 'text-brand-dark font-semibold bg-brand-pale/60' : ''}`
+              }
+            >
+              Analytics
+            </NavLink>
           </ul>
         </div>
       )}

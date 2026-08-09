@@ -28,7 +28,7 @@ const stack = [
     color: '#4A89AC',
   },
   {
-    name: 'Yahoo Finance API',
+    name: 'Finnhub API',
     desc: 'External market data source powering live prices and charts.',
     color: '#446592',
   },
